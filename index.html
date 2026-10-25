@@ -3,22 +3,40 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#111111">
+  <meta name="theme-color" content="#111311">
   <title>Workout Plan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="top">
-    <h1 id="title">Workout Plan</h1>
-    <nav id="tabs" class="tabs" aria-label="Workouts"></nav>
-    <div class="progress" aria-live="polite">
-      <div class="bar"><span id="bar-fill"></span></div>
-      <span id="progress-text"></span>
-      <button id="reset" class="reset" type="button">Reset</button>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-top">
+        <span id="eyebrow" class="eyebrow">Workout Plan</span>
+        <button id="reset" class="reset" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+          Reset
+        </button>
+      </div>
+      <nav id="tabs" class="tabs" aria-label="Workouts"></nav>
+      <h1 id="title">Today’s session</h1>
+      <div id="stats" class="stats"></div>
+      <div class="progress" aria-live="polite">
+        <div class="progress-row"><span>Progress</span><strong id="progress-text"></strong></div>
+        <div class="bar"><span id="bar-fill"></span></div>
+      </div>
+      <button id="start" class="start" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>
+        <span id="start-label">Start workout</span>
+      </button>
     </div>
   </header>
 
   <main id="plan"></main>
+
+  <div id="focus" class="focus" role="dialog" aria-modal="true" aria-label="Workout focus mode" hidden></div>
 
   <script src="workouts.js"></script>
   <script src="app.js"></script>

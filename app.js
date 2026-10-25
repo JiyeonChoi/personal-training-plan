@@ -7,11 +7,26 @@
   const esc = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
+  const ICONS = {
+    check: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>`,
+    clock: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
+    play: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>`,
+    repeat: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>`,
+    close: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
+    left: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>`,
+    right: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>`,
+  };
+
   // Ticked-off exercises are remembered on her phone only.
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } },
   };
+
+  // Exercises in display order, used by focus mode.
+  let steps = [];
+  let focusIdx = 0;
+  let setsDone = {};
 
   function current() {
     const id = decodeURIComponent(location.hash.slice(1));
@@ -19,11 +34,10 @@
   }
 
   function dose(ex) {
-    const parts = [];
-    if (ex.sets && ex.reps) parts.push(`${ex.sets} × ${ex.reps}`);
-    else if (ex.sets) parts.push(`${ex.sets} sets`);
-    else if (ex.reps) parts.push(`${ex.reps} reps`);
-    return parts.join("");
+    if (ex.sets && ex.reps) return `${ex.sets} × ${ex.reps}`;
+    if (ex.sets) return `${ex.sets} sets`;
+    if (ex.reps) return `${ex.reps} reps`;
+    return "";
   }
 
   function videoHtml(url) {
@@ -42,22 +56,29 @@
     return `<div class="video"><video src="${esc(url)}" controls playsinline preload="metadata"></video></div>`;
   }
 
-  function cardHtml(ex, key) {
+  function mediaHtml(ex) {
     const images = [].concat(ex.image || []).filter(Boolean);
-    const hasMedia = images.length > 0 || !!ex.video;
-    const expandable = hasMedia || !!ex.notes;
-    const d = dose(ex);
-    const details = [
-      d && `<span class="dose">${esc(d)}</span>`,
-      ex.min && `<span>${esc(ex.min)} min</span>`,
-      ex.target && `<span class="target">${esc(ex.target)}</span>`,
-      hasMedia && `<span class="has-media">▶ Demo</span>`,
-    ].filter(Boolean).join("");
-
     const gallery = images.length
       ? `<div class="gallery${images.length > 1 ? " multi" : ""}">${images
           .map((src) => `<img src="${esc(src)}" alt="${esc(ex.name)}" loading="lazy">`).join("")}</div>`
       : "";
+    return gallery + videoHtml(ex.video);
+  }
+
+  function hasMedia(ex) {
+    return [].concat(ex.image || []).filter(Boolean).length > 0 || !!ex.video;
+  }
+
+  function cardHtml(ex, key) {
+    const media = hasMedia(ex);
+    const expandable = media || !!ex.notes;
+    const d = dose(ex);
+    const details = [
+      d && `<span class="dose">${esc(d)}</span>`,
+      ex.min && `<span>${ICONS.clock}${esc(ex.min)} min</span>`,
+      ex.target && `<span class="target">${esc(ex.target)}</span>`,
+      media && `<span class="has-media">${ICONS.play}Demo</span>`,
+    ].filter(Boolean).join("");
 
     return `
       <article class="card" data-key="${esc(key)}">
@@ -67,14 +88,11 @@
             <span class="name">${esc(ex.name)}</span>
             ${details ? `<span class="details">${details}</span>` : ""}
           </button>
-          <button class="check" type="button" aria-label="Mark ${esc(ex.name)} done">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-          </button>
+          <button class="check" type="button" aria-label="Mark ${esc(ex.name)} done">${ICONS.check}</button>
         </div>
         ${expandable ? `<div class="body">
+          ${mediaHtml(ex)}
           ${ex.notes ? `<p class="notes">${esc(ex.notes)}</p>` : ""}
-          ${gallery}
-          ${videoHtml(ex.video)}
         </div>` : ""}
       </article>`;
   }
@@ -88,9 +106,11 @@
 
     if (!w) {
       $("plan").innerHTML = `<p class="empty">No workouts yet.</p>`;
+      $("start").hidden = true;
       return;
     }
-    $("title").textContent = w.title || "Workout Plan";
+    $("eyebrow").textContent = w.title || "Workout Plan";
+    $("title").textContent = w.heading || "Today’s session";
     document.title = w.title || "Workout Plan";
 
     const exercises = w.exercises.filter((e) => e && e.name);
@@ -104,13 +124,29 @@
       return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
     });
 
+    const totalMin = exercises.reduce((n, ex) => n + (Number(ex.min) || 0), 0);
+    const stats = [
+      totalMin && [`~${totalMin}`, "minutes"],
+      [exercises.length, exercises.length === 1 ? "exercise" : "exercises"],
+      [keys.length, keys.length === 1 ? "section" : "sections"],
+    ].filter(Boolean);
+    $("stats").innerHTML = stats.map(([v, l]) => `<div class="stat"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("");
+
+    steps = [];
     let html = w.intro ? `<p class="intro">${esc(w.intro)}</p>` : "";
-    for (const c of keys) {
-      const info = components[c] || { label: c, color: "#888" };
+    keys.forEach((c, si) => {
+      const info = components[c] || { label: c, color: "#888888" };
       const items = sections[c];
       const mins = items.reduce((n, { ex }) => n + (Number(ex.min) || 0), 0);
       html += `<section class="section" style="--c:${esc(info.color)}">
-        <div class="section-head"><h2>${esc(info.label)}</h2>${mins ? `<span class="meta">~${mins} min</span>` : ""}</div>`;
+        <div class="section-head">
+          <div class="section-title">
+            <span class="section-num">${String(si + 1).padStart(2, "0")}</span>
+            <h2>${esc(info.label)}</h2>
+            <span class="dot" aria-hidden="true"></span>
+          </div>
+          ${mins ? `<span class="meta">~${mins} min</span>` : ""}
+        </div>`;
 
       // Group 7.1 / 7.2 / 7.3 into one superset block.
       for (let i = 0; i < items.length; ) {
@@ -118,8 +154,14 @@
         let j = i + 1;
         if (group) while (j < items.length && String(items[j].ex.no || "").split(".")[0] === group && String(items[j].ex.no).includes(".")) j++;
         const chunk = items.slice(i, j);
-        if (group && chunk.length > 1) {
-          html += `<div class="superset"><p class="superset-label">Superset · do back to back, then repeat</p>
+        const isSuperset = group && chunk.length > 1;
+        const rounds = Math.max(...chunk.map(({ ex }) => Number(ex.sets) || 0));
+        chunk.forEach(({ ex, key }, k) => {
+          steps.push({ ex, key, info, superset: isSuperset ? { group, pos: k + 1, len: chunk.length } : null });
+        });
+        if (isSuperset) {
+          html += `<div class="superset">
+            <p class="superset-label"><b>${ICONS.repeat}Superset ${esc(group)}</b><span>back to back${rounds ? ` · ${rounds} rounds` : ""}</span></p>
             ${chunk.map(({ ex, key }) => cardHtml(ex, key)).join("")}</div>`;
         } else {
           html += chunk.map(({ ex, key }) => cardHtml(ex, key)).join("");
@@ -127,8 +169,10 @@
         i = j;
       }
       html += `</section>`;
-    }
+    });
+    html += `<p class="footnote">Ticks are saved on this phone only.</p>`;
     $("plan").innerHTML = html;
+    $("start").hidden = steps.length === 0;
     applyDone();
   }
 
@@ -146,9 +190,104 @@
     });
     const total = cards.length;
     $("bar-fill").style.width = total ? `${(count / total) * 100}%` : "0";
-    $("progress-text").textContent = total ? (count === total ? "All done 🎉" : `${count} / ${total} done`) : "";
+    $("progress-text").textContent = total ? (count === total ? "All done" : `${count} of ${total} done`) : "";
+    $("start-label").textContent = count === 0 ? "Start workout" : count === total ? "Go again" : "Continue workout";
   }
 
+  // ── Focus mode: one exercise at a time ─────────────────
+  function renderFocus() {
+    const s = steps[focusIdx];
+    if (!s) return;
+    const { ex, info, superset } = s;
+    const segs = steps.map((_, i) => `<span class="${i < focusIdx ? "past" : i === focusIdx ? "now" : ""}"></span>`).join("");
+    const stat = (v, l) => (v ? `<div><b>${esc(v)}</b><span>${l}</span></div>` : "");
+    const last = focusIdx === steps.length - 1;
+    const setCount = Number(ex.sets) || 0;
+    const sets = Array.from({ length: setCount }, (_, i) =>
+      `<button class="set" type="button" data-set="${i}" aria-pressed="false">Set ${i + 1}</button>`).join("");
+
+    $("focus").innerHTML = `<div class="focus-inner" style="--c:${esc(info.color)}">
+      <div class="focus-top">
+        <button class="icon-btn" type="button" data-act="close" aria-label="Back to plan">${ICONS.close}</button>
+        <span class="focus-section"><span class="dot" aria-hidden="true"></span>${esc(info.label)}</span>
+        <span class="focus-pos">${focusIdx + 1} / ${steps.length}</span>
+      </div>
+      <div class="segs" aria-hidden="true">${segs}</div>
+      ${mediaHtml(ex)}
+      <div class="focus-head">
+        ${superset ? `<span class="pill">Superset ${esc(superset.group)} · ${superset.pos} of ${superset.len}</span>` : ""}
+        <h2>${esc(ex.name)}</h2>
+        ${ex.target ? `<span class="focus-target">Target · <b>${esc(ex.target)}</b></span>` : ""}
+        ${ex.notes ? `<p class="notes">${esc(ex.notes)}</p>` : ""}
+      </div>
+      <div class="focus-stats">${stat(ex.sets, "sets")}${stat(ex.reps, "reps")}${stat(ex.min, "minutes")}</div>
+      ${setCount ? `<div class="sets"><span>Tap each set as you finish it</span><div class="set-row">${sets}</div></div>` : ""}
+      <div class="focus-nav">
+        <button class="prev" type="button" data-act="prev" aria-label="Previous exercise" ${focusIdx === 0 ? "disabled" : ""}>${ICONS.left}</button>
+        <button class="next" type="button" data-act="next">${last ? "Finish workout" : "Done, next"}${ICONS.right}</button>
+      </div>
+    </div>`;
+    applySets();
+    $("focus").scrollTop = 0;
+  }
+
+  function applySets() {
+    const n = setsDone[steps[focusIdx]?.key] || 0;
+    $("focus").querySelectorAll(".set").forEach((b, i) => {
+      b.setAttribute("aria-pressed", i < n);
+      b.textContent = `Set ${i + 1}${i < n ? " ✓" : ""}`;
+    });
+  }
+
+  function openFocus() {
+    if (!steps.length) return;
+    const done = store.get(doneKey());
+    const next = steps.findIndex((s) => !done[s.key]);
+    focusIdx = next < 0 ? 0 : next;
+    setsDone = {};
+    renderFocus();
+    $("focus").hidden = false;
+    document.body.classList.add("locked");
+    $("focus").querySelector('[data-act="close"]').focus();
+  }
+
+  function closeFocus() {
+    $("focus").hidden = true;
+    $("focus").innerHTML = "";
+    document.body.classList.remove("locked");
+    applyDone();
+    $("start").focus();
+  }
+
+  $("focus").addEventListener("click", (e) => {
+    const set = e.target.closest(".set");
+    if (set) {
+      const i = Number(set.dataset.set);
+      const key = steps[focusIdx].key;
+      const n = setsDone[key] || 0;
+      setsDone[key] = n === i + 1 ? i : i + 1;
+      applySets();
+      return;
+    }
+    const act = e.target.closest("[data-act]")?.dataset.act;
+    if (act === "close") closeFocus();
+    else if (act === "prev" && focusIdx > 0) { focusIdx--; renderFocus(); }
+    else if (act === "next") {
+      const done = store.get(doneKey());
+      done[steps[focusIdx].key] = true;
+      store.set(doneKey(), done);
+      if (focusIdx === steps.length - 1) closeFocus();
+      else { focusIdx++; renderFocus(); }
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$("focus").hidden) closeFocus();
+  });
+
+  $("start").addEventListener("click", openFocus);
+
+  // ── Plan list ──────────────────────────────────────────
   $("plan").addEventListener("click", (e) => {
     const card = e.target.closest(".card");
     if (!card) return;

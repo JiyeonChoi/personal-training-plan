@@ -52,8 +52,8 @@ window.WORKOUTS = [
 
 // Section names and colours. Change the labels if you like.
 window.COMPONENTS = {
-  warmup:     { label: "Warm-up",             color: "#3b82f6" },
-  activation: { label: "Activation",          color: "#d97706" },
-  resistance: { label: "Resistance Training", color: "#6b7280" },
+  warmup:     { label: "Warm-up",             color: "#2f6feb" },
+  activation: { label: "Activation",          color: "#d9701a" },
+  resistance: { label: "Resistance Training", color: "#6b5bd6" },
   cooldown:   { label: "Cool-down",           color: "#dc2626" },
 };

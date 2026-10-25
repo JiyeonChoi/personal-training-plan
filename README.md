@@ -14,6 +14,13 @@ target, minutes, sets, reps, notes, and optional `image` / `video`.
 
 Your friend can tick off exercises as she goes; that's saved on her phone only.
 
+**Start workout** opens focus mode: one exercise at a time, with set buttons and a "Done, next" button
+that ticks the exercise off and moves on.
+
+## Changing the look
+
+The main colour is `--accent` at the top of `styles.css`. Section colours live in `COMPONENTS` in `workouts.js`.
+
 ## Preview locally
 
 Open `index.html` in a browser. No build step.
