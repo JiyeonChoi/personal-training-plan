@@ -55,7 +55,9 @@ window.WORKOUTS = [
       { no: "9", name: "Abductor Machine", component: "resistance", target: "Glute", min: 5, sets: 3, reps: 10,
         image: ["media/abductor-machine-1.jpg", "media/abductor-machine-2.jpg"] },
 
-      { no: "10", name: "Cool Down Stretches", component: "cooldown", target: "Stretch", min: 5, sets: 1, reps: 10 },
+      { no: "10", name: "Cool Down Stretches", component: "cooldown", target: "Stretch", min: 5, sets: 1, reps: 10,
+        notes: "1. Hip flexor stretch\n2. Shoulder stretch\n3. Arms up\n4. Forward fold\n5. Cat cow\n6. Superman\n7. Child’s pose\n8. Seated forward fold\n9. Knee to chest stretch\nAlso: upward dog and downward dog",
+        image: ["media/cooldown-1.jpg", "media/cooldown-2.jpg", "media/cooldown-3.jpg", "media/cooldown-4.jpg", "media/cooldown-5.jpg", "media/cooldown-6.jpg", "media/cooldown-7.jpg", "media/cooldown-8.jpg", "media/cooldown-9.jpg"] },
     ],
   },
 ];
