@@ -30,22 +30,22 @@ window.WORKOUTS = [
     title: "Workout 8",
     intro: "Go at your own pace. Tap an exercise to see the demo, tick it off when you're done.",
     exercises: [
-      { no: "1", name: "Deadbugs", component: "warmup", target: "Stretch", min: 3, sets: 2, reps: 5 },
-      { no: "3", name: "Kettlebell Swings", component: "warmup", target: "Stretch", min: 3, sets: 2, reps: 5 },
+      { no: "1", name: "90/90 Hip Rotation", component: "warmup", target: "Stretch", min: 5, sets: 2, reps: 3 },
+      { no: "2", name: "Standing Leg Circle", component: "warmup", target: "Stretch", min: 5, sets: 2, reps: 10 },
+      { no: "3", name: "Arm Circles", component: "warmup", target: "Stretch", min: 5, sets: 2, reps: 10 },
 
-      { no: "4", name: "Plank Dips", component: "activation", target: "Abs", min: 5, sets: 3, reps: 10 },
-      { no: "5", name: "Bosu Ball Single Leg Hold", component: "activation", target: "Balance", min: 5, sets: 3, reps: 10 },
-      { no: "6", name: "Mountain Climbers with sliders", component: "activation", target: "Abs", min: 5, sets: 3, reps: 10 },
+      { no: "4", name: "Leg Raises", component: "activation", target: "Abs", min: 5, sets: 3, reps: 5 },
+      { no: "5", name: "Plank Dips", component: "activation", target: "Abs", min: 5, sets: 3, reps: 10 },
 
-      { no: "7.1", name: "Reverse Lunge + Side Squat + Front Squat", component: "resistance", target: "Glute", min: 5, sets: 3, reps: 10 },
-      { no: "7.2", name: "Cable Kneeling Single Arm Row", component: "resistance", target: "Back", min: 5, sets: 3, reps: 10 },
-      { no: "7.3", name: "Bicycle Crunch", component: "resistance", target: "Abs", min: 5, sets: 3, reps: 10 },
+      { no: "6.1", name: "Goblet Squat", component: "resistance", target: "Glute · Quad", min: 5, sets: 3, reps: 10, notes: "10 - 15 lbs" },
+      { no: "6.2", name: "Russian Twist", component: "resistance", target: "Abs", min: 5, sets: 3, reps: 10, notes: "5 - 10 lbs" },
+      { no: "6.3", name: "DB Tricep Extension", component: "resistance", target: "Triceps", min: 5, sets: 3, reps: 10, notes: "5 lbs" },
 
-      { no: "8.1", name: "Kneeling Pushups", component: "resistance", target: "Chest", min: 5, sets: 3, reps: 10 },
-      { no: "8.2", name: "Arnold Press", component: "resistance", target: "Shoulder", min: 5, sets: 3, reps: 10 },
-      { no: "8.3", name: "Bulgarian Split Squat", component: "resistance", min: 5, sets: 3, reps: 10 },
+      { no: "7", name: "DB Shoulder Press", component: "resistance", target: "Shoulder", min: 5, sets: 3, reps: 10, notes: "5 lbs x 2" },
+      { no: "8", name: "Lat Pulldown", component: "resistance", target: "Back", min: 5, sets: 3, reps: 10, notes: "30 - 40 lbs?" },
+      { no: "9", name: "Abductor Machine", component: "resistance", target: "Glute", min: 5, sets: 3, reps: 10 },
 
-      { no: "9", name: "Lat Pull down or Row Machine", component: "resistance", min: 5, sets: 3, reps: 10 },
+      { no: "10", name: "Cool Down Stretches", component: "cooldown", target: "Stretch", min: 5, sets: 1, reps: 10 },
     ],
   },
 ];
