@@ -30,6 +30,7 @@ Open `index.html` in a browser. No build step.
 It's a plain static site, so any static host works. With a private repo, the easiest free option
 is Netlify or Vercel: import the repo, leave the build command empty, and share the URL.
 
-## Photo credits
+## Illustrations
 
-Exercise photos in `media/` come from [free-exercise-db](https://github.com/yuhonas/free-exercise-db), released into the public domain.
+The exercise pictures in `media/` are drawn by `tools/draw.js` (poses are defined near the bottom of that file).
+To redraw them: `node tools/draw.js media && node tools/fit.js media` (needs Node and Playwright).
